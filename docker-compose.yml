@@ -42,5 +42,19 @@ services:
     command: celery -A config beat -l info
     ports: []
 
+  frontend:
+    build: ./frontend
+    env_file:
+      - path: ./frontend/.env.local
+        required: false
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on: [backend]
+
 volumes:
   pgdata:

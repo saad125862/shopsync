@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 
+import requests
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -239,7 +240,7 @@ class InventoryAdjustView(ShopView):
         delta = ser.validated_data["delta"]
         try:
             adjust_in_shopify(self.shop, level, delta)
-        except ShopifyError as exc:
+        except (ShopifyError, requests.RequestException) as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
         level = services.set_level(level.variant, level.location, level.available + delta)
         return Response(InventorySer(level).data)

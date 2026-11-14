@@ -16,3 +16,14 @@ docker compose exec backend pytest
 
 Services: `db` (Postgres 16), `redis`, `backend` (Django on :8000), `worker` and `beat` (Celery).
 API docs: http://localhost:8000/api/docs/
+
+## Dashboard (local)
+
+```bash
+docker compose exec backend python manage.py seed_demo      # demo shop, 131 variants, 60 orders
+docker compose exec backend python manage.py dev_token      # prints a local session token
+echo "VITE_DEV_TOKEN=<token>" > frontend/.env.local         # then: docker compose up -d frontend
+```
+
+Open http://localhost:5173. Inside the Shopify admin the dashboard uses App Bridge session tokens instead.
+Tests: `cd frontend && npm test`.

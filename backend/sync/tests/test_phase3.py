@@ -98,6 +98,15 @@ def test_adjust_shopify_error_returns_502(data):
     assert level.available == 3
 
 
+def test_adjust_network_failure_returns_502(data):
+    import requests
+
+    level = data[3]["M"]
+    with mock.patch.object(api, "adjust_in_shopify", side_effect=requests.ConnectionError("down")):
+        resp = client_for().post(f"/api/inventory/{level.id}/adjust", {"delta": 1}, format="json")
+    assert resp.status_code == 502
+
+
 def test_adjust_mutation_payload(data):
     shop, _, loc, levels = data
     client = mock.Mock()
