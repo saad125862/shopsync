@@ -82,5 +82,9 @@ SHOPIFY_SCOPES = env(
     default="read_products,write_products,read_inventory,write_inventory,read_orders,read_locations",
 )
 APP_URL = env("APP_URL", default="http://localhost:8000")
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="ShopSync <noreply@localhost>")
 # Optional Fernet key for encrypting Shopify tokens; derived from SECRET_KEY when empty.
 FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY", default="")
