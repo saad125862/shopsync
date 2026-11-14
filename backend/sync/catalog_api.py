@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.db.models import Count, DecimalField, ExpressionWrapper, F, IntegerField, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import serializers
 from rest_framework.response import Response
 
@@ -199,6 +199,7 @@ class ProductRowSer(serializers.ModelSerializer):
             "stock",
         ]
 
+    @extend_schema_field(serializers.ChoiceField(choices=["ok", "low", "out"]))
     def get_stock(self, obj):
         """Product-level state, like Shopify: judged on total stock, not on a single variant."""
         if obj.total_available <= 0:

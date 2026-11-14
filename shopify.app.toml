@@ -1,0 +1,25 @@
+# Shopify app configuration (managed with the Shopify CLI: `shopify app deploy`).
+# Replace the placeholder URLs with your real Vercel and Render URLs, and client_id with the
+# Client ID from the Dev Dashboard. This file contains no secrets.
+client_id = "REPLACE_WITH_CLIENT_ID"
+name = "ShopSync"
+application_url = "https://REPLACE-DASHBOARD.vercel.app"
+embedded = true
+
+[access_scopes]
+scopes = "read_products,write_products,read_inventory,write_inventory,read_orders,read_locations"
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = ["https://REPLACE-API.onrender.com/auth/callback"]
+
+[webhooks]
+api_version = "2025-10"
+
+  # Mandatory privacy webhooks for apps distributed to merchants.
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "https://REPLACE-API.onrender.com/webhooks/gdpr"
+
+# Product/order/inventory webhooks are registered per shop by the backend after install
+# (see sync/services.py: register_webhooks), so they are not listed here.

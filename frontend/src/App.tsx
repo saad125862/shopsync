@@ -15,15 +15,17 @@ import {
   RefreshIcon,
   SettingsIcon,
 } from "@shopify/polaris-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import { api, type Overview, type SearchResults } from "./api";
 import { ProductThumb } from "./components/ProductThumb";
 import { ToastProvider } from "./hooks/useToast";
+import { hasCredentials, isEmbedded, logout } from "./lib/auth";
 import Alerts from "./pages/Alerts";
 import Analytics from "./pages/Analytics";
+import Connect from "./pages/Connect";
 import Home from "./pages/Home";
 import Inventory from "./pages/Inventory";
 import Orders from "./pages/Orders";
@@ -51,12 +53,20 @@ function useDebounced<T>(value: T, ms = 250): T {
 }
 
 export default function App() {
+  const [authed, setAuthed] = useState(hasCredentials());
+  if (!authed) return <Connect onDone={() => setAuthed(true)} />;
+  return <Shell onLogout={() => setAuthed(false)} />;
+}
+
+function Shell({ onLogout }: { onLogout: () => void }) {
+  const qc = useQueryClient();
   const nav = useNavigate();
   const { pathname } = useLocation();
   const [mobileNav, setMobileNav] = useState(false);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
   const searchBox = useRef<HTMLDivElement>(null);
   const debounced = useDebounced(search);
 
@@ -203,12 +213,30 @@ export default function App() {
       }
       userMenu={
         <TopBar.UserMenu
-          actions={[{ items: [{ content: "Settings", onAction: () => go("/settings") }] }]}
+          actions={[
+            {
+              items: [
+                { content: "Settings", onAction: () => go("/settings") },
+                ...(isEmbedded()
+                  ? []
+                  : [
+                      {
+                        content: "Log out",
+                        onAction: () => {
+                          logout();
+                          qc.clear();
+                          onLogout();
+                        },
+                      },
+                    ]),
+              ],
+            },
+          ]}
           name={o?.shop?.replace(".myshopify.com", "") ?? "Store"}
           detail={o?.shop ?? ""}
           initials={(o?.shop ?? "S").charAt(0).toUpperCase()}
-          open={false}
-          onToggle={() => go("/settings")}
+          open={userOpen}
+          onToggle={() => setUserOpen((v) => !v)}
         />
       }
     />

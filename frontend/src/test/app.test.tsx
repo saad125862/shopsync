@@ -5,7 +5,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { api, ApiError } from "../api";
+import { api, ApiError, installRedirectUrl } from "../api";
 import { StatusBadge } from "../components/StatusBadge";
 import Inventory from "../pages/Inventory";
 
@@ -41,6 +41,24 @@ describe("api()", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => json({ detail: "nope" }, 502));
     await expect(api("/api/x")).rejects.toMatchObject({ status: 502, message: "nope" });
     expect(new ApiError(1, "m")).toBeInstanceOf(Error);
+  });
+});
+
+describe("install redirect", () => {
+  it("builds the OAuth entry url from Shopify's query string", () => {
+    expect(installRedirectUrl("?shop=a.myshopify.com&hmac=x", "https://api.example.com")).toBe(
+      "https://api.example.com/auth/install?shop=a.myshopify.com&hmac=x",
+    );
+    expect(installRedirectUrl("", "https://api.example.com")).toBeNull();
+  });
+  it("opens it at top level when the shop is not installed", async () => {
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    window.history.pushState({}, "", "/?shop=a.myshopify.com&hmac=x");
+    vi.spyOn(globalThis, "fetch").mockImplementation(() => json({ detail: "Shop not installed" }, 401));
+    await expect(api("/api/overview")).rejects.toMatchObject({ status: 401 });
+    expect(open).toHaveBeenCalledWith(expect.stringContaining("/auth/install?shop=a.myshopify.com"), "_top");
+    window.history.pushState({}, "", "/");
+    vi.restoreAllMocks();
   });
 });
 

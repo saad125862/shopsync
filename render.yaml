@@ -1,0 +1,59 @@
+# Render Blueprint: API + Celery worker (with beat) + Redis.
+# Database is Neon (external): paste its pooled connection string as DATABASE_URL.
+# Secrets marked `sync: false` are asked for in the Render dashboard when you apply the blueprint.
+services:
+  - type: web
+    name: shopsync-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: ./backend
+    plan: starter # free sleeps after 15 min idle; Shopify webhooks need a fast reply (see docs/DEPLOY.md)
+    healthCheckPath: /health
+    envVars: &common
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+      - key: DATABASE_URL
+        sync: false # Neon pooled connection string (sslmode=require)
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: shopsync-redis
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        sync: false # e.g. shopsync-api.onrender.com
+      - key: APP_URL
+        sync: false # https://shopsync-api.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false # https://shopsync-api.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false # https://your-dashboard.vercel.app
+      - key: SHOPIFY_API_KEY
+        sync: false
+      - key: SHOPIFY_API_SECRET
+        sync: false
+      - key: SHOPIFY_SCOPES
+        value: read_products,write_products,read_inventory,write_inventory,read_orders,read_locations
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+
+  - type: worker
+    name: shopsync-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: ./backend
+    plan: starter
+    # -B runs the beat scheduler in the same process (nightly reconcile, failed-webhook replay)
+    dockerCommand: celery -A config worker -B -l info
+    envVars: *common
+
+  - type: keyvalue
+    name: shopsync-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # only services in this Render account can connect

@@ -1,3 +1,5 @@
+import { getDevToken, getStoredToken } from "./lib/auth";
+
 declare global {
   interface Window {
     shopify?: { idToken: () => Promise<string> };
@@ -9,7 +11,14 @@ const BASE = import.meta.env.VITE_API_URL ?? "";
 /** Session token: App Bridge inside the Shopify admin, a dev token when running standalone. */
 export async function getToken(): Promise<string> {
   if (window.shopify?.idToken) return window.shopify.idToken();
-  return import.meta.env.VITE_DEV_TOKEN ?? "";
+  return getStoredToken() ?? getDevToken();
+}
+
+/** Where to send a merchant who opened the app before it was installed (OAuth entry point). */
+export function installRedirectUrl(search: string, base = BASE): string | null {
+  const params = new URLSearchParams(search);
+  if (!params.get("shop")) return null;
+  return `${base}/auth/install?${params.toString()}`;
 }
 
 export class ApiError extends Error {
@@ -36,6 +45,10 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       detail = (await res.json()).detail ?? detail;
     } catch {
       /* non-JSON error body */
+    }
+    if (res.status === 401 && detail === "Shop not installed") {
+      const url = installRedirectUrl(window.location.search);
+      if (url) window.open(url, "_top");
     }
     throw new ApiError(res.status, detail);
   }
