@@ -18,6 +18,10 @@ with you; nothing below needs to be committed.
 
 ## 2. Render (API, worker, Redis)
 
+`render.yaml` is the **free demo mode** (one free web service, background jobs run inline, no nightly
+reconcile). `render.paid.yaml` is the full setup with a Celery worker, beat and Redis (Starter plan, about
+14 USD per month); rename it to `render.yaml` to use it.
+
 1. Push this repo to GitHub (already done), then in Render choose **New > Blueprint** and select it.
 2. Render reads `render.yaml` and asks for each value marked `sync: false`:
 
