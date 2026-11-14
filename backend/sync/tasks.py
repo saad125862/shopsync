@@ -49,6 +49,20 @@ def process_webhook_event(self, event_id: int):
 
 
 @shared_task
+def reconcile_all():
+    from .reconcile import reconcile
+
+    count = 0
+    for shop in Shop.objects.filter(is_active=True):
+        try:
+            reconcile(shop)
+            count += 1
+        except Exception:
+            log.exception("reconcile failed for %s", shop.domain)
+    return count
+
+
+@shared_task
 def replay_failed_events():
     ids = list(
         WebhookEvent.objects.filter(status=WebhookEvent.Status.FAILED).values_list("id", flat=True)

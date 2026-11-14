@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -73,6 +74,16 @@ SPECTACULAR_SETTINGS = {"TITLE": "ShopSync API", "VERSION": "0.1.0"}
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://redis:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
+CELERY_BEAT_SCHEDULE = {
+    "nightly-reconcile": {
+        "task": "sync.tasks.reconcile_all",
+        "schedule": crontab(hour=3, minute=0),
+    },
+    "replay-failed-webhooks": {
+        "task": "sync.tasks.replay_failed_events",
+        "schedule": crontab(minute="*/15"),
+    },
+}
 
 # Shopify (set via .env, never committed)
 SHOPIFY_API_KEY = env("SHOPIFY_API_KEY", default="")
