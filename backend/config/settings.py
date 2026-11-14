@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "core",
+    "sync",
 ]
 
 MIDDLEWARE = [
@@ -81,3 +82,5 @@ SHOPIFY_SCOPES = env(
     default="read_products,write_products,read_inventory,write_inventory,read_orders,read_locations",
 )
 APP_URL = env("APP_URL", default="http://localhost:8000")
+# Optional Fernet key for encrypting Shopify tokens; derived from SECRET_KEY when empty.
+FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY", default="")
