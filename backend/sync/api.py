@@ -349,6 +349,36 @@ class SettingsView(ShopView):
         return self.get(request)
 
 
+class MobileTokenView(ShopView):
+    """Mint a 30-day link code for the mobile app (callable only with a Shopify session token)."""
+
+    @extend_schema(request=None, responses={201: dict})
+    def post(self, request):
+        import time
+
+        import jwt
+        from django.conf import settings
+
+        if request.auth.get("typ") == "mobile":
+            return Response({"detail": "Mobile tokens cannot mint tokens"}, status=403)
+        now = int(time.time())
+        days = 30
+        token = jwt.encode(
+            {
+                "iss": f"https://{self.shop.domain}/admin",
+                "dest": f"https://{self.shop.domain}",
+                "aud": settings.SHOPIFY_API_KEY,
+                "typ": "mobile",
+                "iat": now,
+                "nbf": now - 5,
+                "exp": now + days * 86400,
+            },
+            settings.SHOPIFY_API_SECRET,
+            algorithm="HS256",
+        )
+        return Response({"token": token, "expires_in_days": days}, status=status.HTTP_201_CREATED)
+
+
 class DeviceView(ShopView):
     @extend_schema(request=DeviceSer, responses={201: dict})
     def post(self, request):

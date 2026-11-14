@@ -27,3 +27,13 @@ echo "VITE_DEV_TOKEN=<token>" > frontend/.env.local         # then: docker compo
 
 Open http://localhost:5173. Inside the Shopify admin the dashboard uses App Bridge session tokens instead.
 Tests: `cd frontend && npm test`.
+
+## Mobile app (React Native / Expo)
+
+```bash
+cd mobile && npm install
+npx expo start            # scan the QR with Expo Go, or press w for the web preview
+```
+
+In the dashboard open **Settings -> Connect mobile app** to generate a link code, then paste it
+into the app together with the API URL. Push notifications need a physical device.

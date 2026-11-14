@@ -1,9 +1,66 @@
-import { Banner, BlockStack, Button, Card, FormLayout, Page, TextField } from "@shopify/polaris";
+import {
+  Banner,
+  BlockStack,
+  Button,
+  Card,
+  FormLayout,
+  InlineStack,
+  Page,
+  Text,
+  TextField,
+} from "@shopify/polaris";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { api, type Settings } from "../api";
 import { QueryState } from "../components/QueryState";
+
+function MobileLink() {
+  const mint = useMutation({
+    mutationFn: () => api<{ token: string; expires_in_days: number }>("/api/mobile-token", { method: "POST" }),
+  });
+  const [copied, setCopied] = useState(false);
+  return (
+    <Card>
+      <BlockStack gap="300">
+        <Text as="h2" variant="headingMd">
+          Connect mobile app
+        </Text>
+        <Text as="p" tone="subdued">
+          Generate a link code, then paste it into the ShopSync mobile app together with this
+          server's API URL.
+        </Text>
+        <InlineStack>
+          <Button loading={mint.isPending} onClick={() => mint.mutate()}>
+            Generate link code
+          </Button>
+        </InlineStack>
+        {mint.error && <Banner tone="critical">{(mint.error as Error).message}</Banner>}
+        {mint.data && (
+          <BlockStack gap="200">
+            <TextField
+              label={`Link code (valid ${mint.data.expires_in_days} days)`}
+              value={mint.data.token}
+              readOnly
+              multiline={3}
+              autoComplete="off"
+            />
+            <InlineStack>
+              <Button
+                onClick={() => {
+                  navigator.clipboard?.writeText(mint.data!.token);
+                  setCopied(true);
+                }}
+              >
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </InlineStack>
+          </BlockStack>
+        )}
+      </BlockStack>
+    </Card>
+  );
+}
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -39,6 +96,7 @@ export default function SettingsPage() {
               {(save.error as Error).message}
             </Banner>
           )}
+          <MobileLink />
           <Card>
             <FormLayout>
               <TextField

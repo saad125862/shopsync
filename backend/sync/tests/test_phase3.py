@@ -146,6 +146,15 @@ def test_device_registration(data):
     assert data[0].device_tokens.count() == 1
 
 
+def test_mobile_token_mint_and_use(data):
+    resp = client_for().post("/api/mobile-token")
+    assert resp.status_code == 201
+    mobile = APIClient()
+    mobile.credentials(HTTP_AUTHORIZATION=f"Bearer {resp.json()['token']}")
+    assert mobile.get("/api/overview").status_code == 200  # works for normal API calls
+    assert mobile.post("/api/mobile-token").status_code == 403  # but cannot mint more tokens
+
+
 def test_push_sent_on_new_alert(data):
     shop, _, loc, levels = data
     shop.device_tokens.create(token="ExponentPushToken[abc]")
