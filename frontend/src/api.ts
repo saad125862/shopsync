@@ -64,16 +64,6 @@ export interface InventoryRow {
   status: StockStatus;
 }
 
-export interface OrderRow {
-  id: number;
-  name: string;
-  total_price: string;
-  currency: string;
-  financial_status: string;
-  fulfillment_status: string;
-  created_at_shopify: string | null;
-  items: { title: string; sku: string; quantity: number }[];
-}
 
 export interface AlertRow {
   id: number;
@@ -96,16 +86,6 @@ export interface SyncLogRow {
   finished_at: string | null;
 }
 
-export interface Overview {
-  products: number;
-  variants: number;
-  low_stock: number;
-  out_of_stock: number;
-  orders_30d: number;
-  revenue_30d: string | number;
-  last_sync: string | null;
-  daily: { date: string; orders: number; revenue: string | number }[];
-}
 
 export interface LocationRow {
   id: number;
@@ -115,4 +95,105 @@ export interface LocationRow {
 export interface Settings {
   low_stock_threshold: number;
   alert_email: string;
+}
+
+export interface OrderRow {
+  id: number;
+  name: string;
+  total_price: string;
+  currency: string;
+  financial_status: string;
+  fulfillment_status: string;
+  created_at_shopify: string | null;
+  item_count: number;
+  items: { title: string; sku: string; quantity: number; price: string }[];
+  subtotal?: string;
+}
+
+export interface TopProduct {
+  id: number | null;
+  title: string;
+  image_url: string;
+  units: number;
+  revenue: string | number;
+}
+
+export interface SetupStep {
+  id: string;
+  title: string;
+  done: boolean;
+  link?: string;
+}
+
+export interface Change {
+  orders: number | null;
+  revenue: number | null;
+  units: number | null;
+  aov: number | null;
+}
+
+export interface Overview {
+  days: number;
+  shop: string;
+  products: number;
+  variants: number;
+  low_stock: number;
+  out_of_stock: number;
+  orders: number;
+  revenue: string | number;
+  units: number;
+  aov: string | number;
+  change: Change;
+  last_sync: string | null;
+  daily: { date: string; orders: number; revenue: string | number }[];
+  top_products: TopProduct[];
+  setup: SetupStep[];
+}
+
+export interface ProductRow {
+  id: number;
+  title: string;
+  vendor: string;
+  status: string;
+  image_url: string;
+  variants_count: number;
+  total_available: number;
+  out_levels: number;
+  low_levels: number;
+  stock: StockStatus;
+}
+
+export interface ProductList extends Paged<ProductRow> {
+  vendors: string[];
+}
+
+export interface ProductLevel {
+  id: number;
+  location_name: string;
+  available: number;
+  threshold: number;
+  status: StockStatus;
+}
+
+export interface ProductDetail {
+  id: number;
+  title: string;
+  vendor: string;
+  status: string;
+  image_url: string;
+  total_available: number;
+  units_sold: number;
+  variants: {
+    id: number;
+    title: string;
+    sku: string;
+    price: string;
+    available: number;
+    levels: ProductLevel[];
+  }[];
+}
+
+export interface SearchResults {
+  products: { id: number; title: string; image_url: string; vendor: string }[];
+  orders: { id: number; name: string; total_price: string; currency: string }[];
 }

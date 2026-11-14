@@ -61,8 +61,13 @@ class Command(BaseCommand):
                 qty = rng.randint(1, 3)
                 total += v["price"] * qty
                 lines.append(
-                    {"variant_id": v["id"], "sku": v["sku"], "title": f"{title} - {v['title']}",
-                     "quantity": qty}
+                    {
+                        "variant_id": v["id"],
+                        "sku": v["sku"],
+                        "title": f"{title} - {v['title']}",
+                        "quantity": qty,
+                        "price": v["price"],
+                    }
                 )
             created = now - timedelta(days=rng.randint(0, 29), hours=rng.randint(0, 23))
             services.upsert_order(

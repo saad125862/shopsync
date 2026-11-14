@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShopSync UI options</title>
+<style>
+:root{--bg:#f6f7f9;--s:#fff;--tx:#14171c;--sub:#5c6573;--bd:#e2e5ea;--ac:#2563eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--s:#1a1d23;--tx:#f3f4f6;--sub:#9ca3af;--bd:#2a2f37;--ac:#60a5fa}}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 120px}
+h1{font-size:22px;font-weight:500;margin:0 0 4px}p.lead{color:var(--sub);margin:0 0 20px}
+.card{background:var(--s);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px)}.card.sel{border:2px solid var(--ac);padding:13px 15px}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:10px}.num{width:24px;color:var(--sub);font-weight:500}
+.head .t{flex:1}.head b{font-weight:500}.head small{display:block;color:var(--sub)}
+.sw span{display:inline-block;width:16px;height:16px;border-radius:50%;border:1px solid var(--bd);margin-left:4px}
+.row{display:flex;gap:12px;align-items:flex-start}.mo{margin-top:10px;font-size:13px;color:var(--sub)}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--s);border-top:1px solid var(--bd);padding:12px 16px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<h1>ShopSync UI options</h1>
+<p class="lead">Click a card to select it (you can pick one for web and one for the app). Then tell me the numbers in chat.</p>
+<div id="opts"></div>
+</main>
+<div id="bar">Selected: <b id="sel">none yet</b> — tell me in chat, e.g. "web 2, app 9"</div>
+<script>
+var O=[
+{n:"Polaris native",t:"Feels like part of Shopify admin",bg:"#f1f2f4",card:"#ffffff",tx:"#202223",sb:"#6d7175",ac:"#008060",bd:"#e1e3e5",f:"system-ui,sans-serif",r:8,sh:"none",mo:"Fade-in cards, count-up KPIs, tab underline slide"},
+{n:"Midnight ops",t:"Dark control room, mono numbers",bg:"#0d1117",card:"#161b22",tx:"#e6edf3",sb:"#8b949e",ac:"#2dd4bf",bd:"#262d36",f:"system-ui,sans-serif",r:10,sh:"none",mo:"Live pulse on alerts, chart line draws in, number ticker"},
+{n:"Paper",t:"Warm, editorial, serif headings",bg:"#f6f1e9",card:"#fffdf8",tx:"#2b2118",sb:"#7a6a58",ac:"#c2542d",bd:"#e4d9c8",f:"Georgia,serif",r:6,sh:"none",mo:"Gentle slide-up, soft hover lift, page-turn tab fade"},
+{n:"Neo-brutal",t:"Thick borders, hard shadows, bold",bg:"#fff7d6",card:"#ffffff",tx:"#111111",sb:"#444444",ac:"#ffd60a",bd:"#111111",f:"system-ui,sans-serif",r:4,sh:"3px 3px 0 #111",mo:"Snappy press-in buttons, bouncy badges, stamp-in rows"},
+{n:"Pastel soft",t:"Rounded, friendly, lilac",bg:"#f3f0ff",card:"#ffffff",tx:"#2d2a4a",sb:"#7b77a1",ac:"#7c6cf0",bd:"#e5e0fb",f:"system-ui,sans-serif",r:16,sh:"none",mo:"Springy toggles, floating cards, confetti on zero alerts"},
+{n:"Terminal",t:"Black and green, all mono",bg:"#050805",card:"#0b110b",tx:"#b6f7b6",sb:"#5e8f5e",ac:"#3ddc54",bd:"#1b2b1b",f:"ui-monospace,Menlo,monospace",r:2,sh:"none",mo:"Typewriter reveal, blinking cursor, scanline row highlight"},
+{n:"Swiss minimal",t:"White, grid, big numbers, red accent",bg:"#ffffff",card:"#ffffff",tx:"#0a0a0a",sb:"#737373",ac:"#e5322d",bd:"#e5e5e5",f:"system-ui,sans-serif",r:0,sh:"none",mo:"Crisp wipe transitions, number roll, line-under hover"},
+{n:"Ocean enterprise",t:"Navy sidebar, dense, data-first",bg:"#eef2f7",card:"#ffffff",tx:"#0f2742",sb:"#5b7090",ac:"#1d6fe0",bd:"#d9e2ee",f:"system-ui,sans-serif",r:8,sh:"none",mo:"Sticky headers, row expand, skeleton shimmer"},
+{n:"Sunset commerce",t:"Dark with warm orange energy",bg:"#17110f",card:"#221915",tx:"#fbeee6",sb:"#b39a8c",ac:"#ff7a3d",bd:"#3a2b24",f:"system-ui,sans-serif",r:14,sh:"none",mo:"Warm glow on alerts, card stagger, progress ring fill"},
+{n:"Forest calm",t:"Sage greens, relaxed, rounded",bg:"#eef3ec",card:"#fbfdfa",tx:"#1f3327",sb:"#6b8574",ac:"#3f8f5a",bd:"#d8e5da",f:"system-ui,sans-serif",r:14,sh:"none",mo:"Leaf-soft fades, breathing status dots, smooth drawer"}
+];
+function web(o){var s=o.sh!=="none"?"box-shadow:"+o.sh+";":"";var card="background:"+o.card+";border:1px solid "+o.bd+";border-radius:"+o.r+"px;"+s;
+var k=function(l,v,c){return '<div style="'+card+'padding:8px 10px;flex:1"><div style="font-size:12px;color:'+o.sb+'">'+l+'</div><div style="font-size:22px;font-weight:500;color:'+(c||o.tx)+'">'+v+'</div></div>'};
+var row=function(a,b,st,c){return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid '+o.bd+';font-size:12px;color:'+o.tx+'"><span style="flex:1">'+a+'</span><span style="color:'+o.sb+'">'+b+'</span><span style="background:'+c+'22;color:'+c+';border-radius:'+Math.min(o.r,10)+'px;padding:1px 8px">'+st+'</span></div>'};
+return '<div style="background:'+o.bg+';border-radius:10px;padding:12px;font-family:'+o.f+';min-width:0;flex:1"><div style="display:flex;gap:14px;font-size:12px;margin-bottom:10px;color:'+o.sb+'"><span style="color:'+o.ac+';font-weight:600">Overview</span><span>Inventory</span><span>Orders</span><span>Alerts</span></div><div style="display:flex;gap:8px;margin-bottom:8px">'+k("Products","20")+k("Low","55","#d9822b")+k("Out","35","#d64545")+'</div><div style="'+card+'padding:8px 10px"><svg viewBox="0 0 200 40" width="100%" height="44" aria-hidden="true"><polyline points="0,32 25,26 50,29 75,14 100,21 125,9 150,16 175,6 200,11" fill="none" stroke="'+o.ac+'" stroke-width="2"/></svg>'+row("Hoodie M / Black","0","Out","#d64545")+row("Classic Tee L","3","Low","#d9822b")+row("Denim Jacket S","41","In stock","#2f9e5b")+'</div></div>'}
+function phone(o){var s=o.sh!=="none"?"box-shadow:"+o.sh+";":"";var card="background:"+o.card+";border:1px solid "+o.bd+";border-radius:"+Math.max(o.r-2,2)+"px;"+s+"padding:6px 8px;margin-top:6px;";
+return '<div style="width:150px;flex:none;background:'+o.bg+';border:3px solid '+o.tx+'44;border-radius:24px;padding:12px 9px;font-family:'+o.f+'"><div style="font-size:13px;font-weight:600;color:'+o.tx+'">Alerts</div><div style="display:flex;gap:6px;margin-top:6px"><span style="flex:1;background:'+o.card+';border-radius:8px;padding:3px 6px;font-size:13px;color:#d64545">35</span><span style="flex:1;background:'+o.card+';border-radius:8px;padding:3px 6px;font-size:13px;color:#d9822b">55</span></div><div style="'+card+'"><div style="font-size:11px;color:#d64545">OUT OF STOCK</div><div style="font-size:12px;color:'+o.tx+'">Sunglasses</div></div><div style="'+card+'"><div style="font-size:11px;color:#d9822b">LOW STOCK</div><div style="font-size:12px;color:'+o.tx+'">Kurti Embroidered</div></div><div style="margin-top:10px;height:8px;border-radius:4px;background:'+o.ac+'"></div></div>'}
+var host=document.getElementById("opts");
+O.forEach(function(o,i){var d=document.createElement("div");d.className="card";d.id="c"+i;
+var sw=[o.bg,o.card,o.ac,o.tx].map(function(c){return '<span style="background:'+c+'"></span>'}).join("");
+d.innerHTML='<div class="head"><span class="num">'+(i+1)+'</span><div class="t"><b>'+o.n+'</b><small>'+o.t+'</small></div><div class="sw">'+sw+'</div></div><div class="row">'+web(o)+phone(o)+'</div><div class="mo">Motion: '+o.mo+'</div>';
+d.onclick=function(){document.querySelectorAll(".card").forEach(function(c){c.classList.remove("sel")});d.classList.add("sel");document.getElementById("sel").textContent=(i+1)+" - "+o.n};
+host.appendChild(d)});
+</script>
+</body>
+</html>

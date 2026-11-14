@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "mobile", "run", "web", "--", "--port", "8081"],
       "port": 8081
+    },
+    {
+      "name": "ui-options",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8090", "--directory", "design"],
+      "port": 8090
     }
   ]
 }

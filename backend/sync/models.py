@@ -101,6 +101,7 @@ class OrderLine(models.Model):
     sku = models.CharField(max_length=255, blank=True, default="")
     title = models.CharField(max_length=500, blank=True, default="")
     quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
 
 class WebhookEvent(models.Model):

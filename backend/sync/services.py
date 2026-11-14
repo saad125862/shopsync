@@ -51,7 +51,10 @@ query($cursor: String) {
     edges { node {
       id name createdAt displayFinancialStatus displayFulfillmentStatus
       currentTotalPriceSet { shopMoney { amount currencyCode } }
-      lineItems(first: 50) { edges { node { title sku quantity variant { id } } } }
+      lineItems(first: 50) { edges { node {
+        title sku quantity variant { id }
+        originalUnitPriceSet { shopMoney { amount } }
+      } } }
     } }
     pageInfo { hasNextPage endCursor }
   }
@@ -187,6 +190,7 @@ def upsert_order(shop: Shop, d: dict) -> Order:
                 sku=li.get("sku") or "",
                 title=li.get("title") or "",
                 quantity=li.get("quantity") or 1,
+                price=Decimal(str(li.get("price") or 0)),
             )
             for li in d.get("line_items", [])
         )
@@ -209,6 +213,11 @@ def norm_order_graphql(node: dict) -> dict:
                 "sku": li["node"].get("sku"),
                 "title": li["node"].get("title"),
                 "quantity": li["node"].get("quantity"),
+                "price": (
+                    ((li["node"].get("originalUnitPriceSet") or {}).get("shopMoney") or {}).get(
+                        "amount"
+                    )
+                ),
             }
             for li in node["lineItems"]["edges"]
         ],

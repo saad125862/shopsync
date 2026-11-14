@@ -1,10 +1,8 @@
 """REST API for the dashboard and mobile app. All endpoints are scoped to the calling shop."""
 
-from datetime import timedelta
 
 import requests
-from django.db.models import Count, Q, Sum
-from django.utils import timezone
+from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.pagination import PageNumberPagination
@@ -19,7 +17,6 @@ from .models import (
     DeviceToken,
     InventoryLevel,
     Location,
-    Order,
     SyncLog,
 )
 from .shopify import GraphQLClient, ShopifyError
@@ -94,27 +91,6 @@ class InventorySer(serializers.ModelSerializer):
         return "low" if obj.available <= self.get_threshold(obj) else "ok"
 
 
-class OrderSer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Order
-        fields = [
-            "id",
-            "name",
-            "total_price",
-            "currency",
-            "financial_status",
-            "fulfillment_status",
-            "created_at_shopify",
-            "items",
-        ]
-
-    def get_items(self, obj):
-        return [
-            {"title": li.title, "sku": li.sku, "quantity": li.quantity} for li in obj.lines.all()
-        ]
-
 
 class AlertSer(serializers.ModelSerializer):
     product = serializers.CharField(source="variant.product.title")
@@ -165,39 +141,6 @@ class DeviceSer(serializers.Serializer):
 
 # ---- views -----------------------------------------------------------------------------------
 
-
-class OverviewView(ShopView):
-    @extend_schema(responses=dict)
-    def get(self, request):
-        shop = self.shop
-        since = timezone.now() - timedelta(days=30)
-        orders = Order.objects.filter(shop=shop, created_at_shopify__gte=since)
-        open_alerts = Alert.objects.filter(shop=shop, resolved_at__isnull=True)
-        last = SyncLog.objects.filter(shop=shop, status="ok").first()
-        daily = (
-            orders.values("created_at_shopify__date")
-            .annotate(orders=Count("id"), revenue=Sum("total_price"))
-            .order_by("created_at_shopify__date")
-        )
-        return Response(
-            {
-                "products": shop.products.count(),
-                "variants": InventoryLevel.objects.filter(location__shop=shop).count(),
-                "low_stock": open_alerts.filter(level="low").count(),
-                "out_of_stock": open_alerts.filter(level="out").count(),
-                "orders_30d": orders.count(),
-                "revenue_30d": orders.aggregate(t=Sum("total_price"))["t"] or 0,
-                "last_sync": last.finished_at if last else None,
-                "daily": [
-                    {
-                        "date": d["created_at_shopify__date"],
-                        "orders": d["orders"],
-                        "revenue": d["revenue"],
-                    }
-                    for d in daily
-                ],
-            }
-        )
 
 
 class InventoryListView(ShopView):
@@ -274,12 +217,6 @@ def adjust_in_shopify(shop, level, delta, client=None):
     if errors:
         raise ShopifyError("; ".join(e["message"] for e in errors))
 
-
-class OrderListView(ShopView):
-    @extend_schema(responses=OrderSer(many=True))
-    def get(self, request):
-        qs = Order.objects.filter(shop=self.shop).prefetch_related("lines")
-        return self.paginated(qs, OrderSer)
 
 
 class AlertListView(ShopView):

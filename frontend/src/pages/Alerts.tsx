@@ -1,8 +1,9 @@
-import { Badge, Card, EmptyState, IndexTable, Page, Text } from "@shopify/polaris";
+import { Badge, Card, IndexTable, Page, Text } from "@shopify/polaris";
 import { useQuery } from "@tanstack/react-query";
 
 import { api, type AlertRow, type Paged } from "../api";
 import { QueryState } from "../components/QueryState";
+import { timeAgo } from "../lib/format";
 
 export default function Alerts() {
   const q = useQuery({
@@ -12,12 +13,16 @@ export default function Alerts() {
   const rows = q.data?.results ?? [];
   return (
     <Page title="Alerts" subtitle="Open low-stock and out-of-stock alerts">
-      <QueryState isLoading={q.isLoading} error={q.error}>
-        <Card padding="0">
+      <Card padding="0">
+        <QueryState isLoading={q.isLoading} error={q.error} onRetry={() => q.refetch()}>
           {rows.length === 0 ? (
-            <EmptyState heading="No open alerts" image="">
-              <p>Everything is above its stock threshold.</p>
-            </EmptyState>
+            <div className="empty">
+              <div className="ok-ring">✓</div>
+              <Text as="h3" variant="headingMd">
+                All stocked up
+              </Text>
+              <p>Nothing is below its threshold right now.</p>
+            </div>
           ) : (
             <IndexTable
               resourceName={{ singular: "alert", plural: "alerts" }}
@@ -28,7 +33,7 @@ export default function Alerts() {
                 { title: "Product" },
                 { title: "Variant" },
                 { title: "Location" },
-                { title: "Left", alignment: "end" },
+                { title: "Left / threshold", alignment: "end" },
                 { title: "Since" },
               ]}
             >
@@ -36,7 +41,7 @@ export default function Alerts() {
                 <IndexTable.Row id={String(a.id)} key={a.id} position={i}>
                   <IndexTable.Cell>
                     <Badge tone={a.level === "out" ? "critical" : "warning"}>
-                      {a.level === "out" ? "Out" : "Low"}
+                      {a.level === "out" ? "Out of stock" : "Low stock"}
                     </Badge>
                   </IndexTable.Cell>
                   <IndexTable.Cell>
@@ -47,17 +52,17 @@ export default function Alerts() {
                   <IndexTable.Cell>{a.variant_title}</IndexTable.Cell>
                   <IndexTable.Cell>{a.location_name}</IndexTable.Cell>
                   <IndexTable.Cell>
-                    <Text as="span" alignment="end" numeric>
+                    <span className="mono">
                       {a.available} / {a.threshold}
-                    </Text>
+                    </span>
                   </IndexTable.Cell>
-                  <IndexTable.Cell>{new Date(a.created_at).toLocaleString()}</IndexTable.Cell>
+                  <IndexTable.Cell>{timeAgo(a.created_at)}</IndexTable.Cell>
                 </IndexTable.Row>
               ))}
             </IndexTable>
           )}
-        </Card>
-      </QueryState>
+        </QueryState>
+      </Card>
     </Page>
   );
 }

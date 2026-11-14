@@ -91,6 +91,6 @@ describe("Inventory page", () => {
   it("shows an error banner when the API fails", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => json({ detail: "boom" }, 500));
     wrap(<Inventory />);
-    await waitFor(() => expect(screen.getByText("Could not load data")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Couldn't load this page")).toBeInTheDocument());
   });
 });
