@@ -4,10 +4,9 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } fro
 import { Btn, ErrorText } from "../components/ui";
 import { api, normalizeUrl } from "../lib/api";
 import { useSession } from "../lib/session";
-import { useTheme } from "../lib/theme";
+import { theme as t } from "../lib/theme";
 
 export default function Connect() {
-  const t = useTheme();
   const { connect } = useSession();
   const [apiUrl, setApiUrl] = useState("http://localhost:8000");
   const [token, setToken] = useState("");

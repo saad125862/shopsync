@@ -52,17 +52,6 @@ export interface Paged<T> {
 
 export type StockStatus = "ok" | "low" | "out";
 
-export interface InventoryRow {
-  id: number;
-  product: string;
-  variant_title: string;
-  sku: string;
-  location_name: string;
-  available: number;
-  threshold: number;
-  status: StockStatus;
-}
-
 export interface AlertRow {
   id: number;
   product: string;
@@ -83,7 +72,43 @@ export interface OrderRow {
   financial_status: string;
   fulfillment_status: string;
   created_at_shopify: string | null;
-  items: { title: string; sku: string; quantity: number }[];
+  item_count: number;
+  items: { title: string; sku: string; quantity: number; price: string }[];
+  subtotal?: string;
+}
+
+export interface ProductRow {
+  id: number;
+  title: string;
+  vendor: string;
+  status: string;
+  image_url: string;
+  variants_count: number;
+  total_available: number;
+  stock: StockStatus;
+}
+
+export interface ProductDetail {
+  id: number;
+  title: string;
+  vendor: string;
+  status: string;
+  total_available: number;
+  units_sold: number;
+  variants: {
+    id: number;
+    title: string;
+    sku: string;
+    price: string;
+    available: number;
+    levels: {
+      id: number;
+      location_name: string;
+      available: number;
+      threshold: number;
+      status: StockStatus;
+    }[];
+  }[];
 }
 
 export interface Settings {
@@ -92,9 +117,17 @@ export interface Settings {
 }
 
 export interface Overview {
+  days: number;
+  shop: string;
   products: number;
   low_stock: number;
   out_of_stock: number;
-  orders_30d: number;
-  revenue_30d: string | number;
+  orders: number;
+  revenue: string | number;
+  units: number;
+  aov: string | number;
+  change: { orders: number | null; revenue: number | null; units: number | null; aov: number | null };
+  daily: { date: string; orders: number; revenue: string | number }[];
+  top_products: { id: number | null; title: string; units: number; revenue: string | number }[];
+  setup: { id: string; title: string; done: boolean }[];
 }

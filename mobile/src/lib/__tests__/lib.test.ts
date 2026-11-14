@@ -1,9 +1,20 @@
 import { api, ApiError, normalizeUrl } from "../api";
-import { money, STATUS_LABEL, timeAgo } from "../format";
+import { greeting, money, STATUS_LABEL, stockText, timeAgo } from "../format";
 
 describe("format", () => {
   it("formats money", () => {
-    expect(money("12.5", "USD")).toBe("12.50 USD");
+    expect(money("12.5", "USD")).toBe("$12.50");
+    expect(money(1234, "USD", 0)).toBe("$1,234");
+    expect(money(5, "BDT")).toBe("5.00 BDT");
+  });
+  it("describes stock like Shopify", () => {
+    expect(stockText(87, 3)).toBe("87 in stock for 3 variants");
+    expect(stockText(2, 1)).toBe("2 in stock");
+  });
+  it("greets by time of day", () => {
+    expect(greeting(8)).toBe("Good morning");
+    expect(greeting(14)).toBe("Good afternoon");
+    expect(greeting(20)).toBe("Good evening");
   });
   it("formats relative time", () => {
     const now = Date.parse("2026-01-01T12:00:00Z");

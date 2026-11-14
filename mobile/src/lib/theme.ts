@@ -1,24 +1,23 @@
-import { useColorScheme } from "react-native";
-
-const light = {
-  bg: "#f4f5f7",
-  card: "#ffffff",
-  text: "#111827",
-  sub: "#6b7280",
-  border: "#e5e7eb",
-  primary: "#008060",
-  onPrimary: "#ffffff",
-};
-const dark: typeof light = {
-  bg: "#0f1115",
-  card: "#1a1d23",
-  text: "#f3f4f6",
-  sub: "#9ca3af",
-  border: "#2a2f37",
-  primary: "#2fb98a",
-  onPrimary: "#04251a",
+/** "Sunset commerce": dark, warm, orange energy. */
+export const theme = {
+  bg: "#17110f",
+  card: "#221915",
+  card2: "#2b201b",
+  text: "#fbeee6",
+  sub: "#b39a8c",
+  border: "#3a2b24",
+  primary: "#ff7a3d",
+  onPrimary: "#2a1204",
+  danger: "#ff6b6b",
+  warn: "#ffc247",
+  ok: "#4ade80",
+  info: "#6aa8ff",
+  radius: 14,
 };
 
-export function useTheme() {
-  return useColorScheme() === "dark" ? dark : light;
+export type Theme = typeof theme;
+
+/** Kept as a hook so screens read like they would with a switchable theme. */
+export function useTheme(): Theme {
+  return theme;
 }
