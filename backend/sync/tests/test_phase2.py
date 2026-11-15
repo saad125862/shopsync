@@ -233,3 +233,4 @@ def test_gdpr_shop_redact(client, shop):
     )
     assert resp.status_code == 200
     assert not Shop.objects.filter(domain=SHOP).exists()
+

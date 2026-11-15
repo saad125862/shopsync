@@ -100,6 +100,10 @@ SPECTACULAR_SETTINGS = {"TITLE": "ShopSync API", "VERSION": "0.1.0"}
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://redis:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
+if CELERY_TASK_ALWAYS_EAGER:
+    # Demo mode (no Redis, no worker): run tasks inline and keep Celery off the network entirely.
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
 CELERY_BEAT_SCHEDULE = {
     "nightly-reconcile": {
         "task": "sync.tasks.reconcile_all",
