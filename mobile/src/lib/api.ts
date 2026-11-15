@@ -1,6 +1,8 @@
 export interface Session {
   apiUrl: string;
   token: string;
+  /** True when signed in through the public read-only demo. */
+  demo?: boolean;
 }
 
 let current: Session | null = null;
@@ -11,6 +13,28 @@ export function setCurrentSession(s: Session | null) {
 
 export function normalizeUrl(url: string): string {
   return url.trim().replace(/\/+$/, "");
+}
+
+/** Public read-only demo: asks the API for a short-lived token for the demo store. */
+export async function demoLogin(apiUrl: string): Promise<Session> {
+  const base = normalizeUrl(apiUrl);
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/demo-login`, { method: "POST" });
+  } catch {
+    throw new ApiError(0, "Couldn't reach the server. Check your connection and try again.");
+  }
+  if (!res.ok) {
+    let detail = "The demo isn't available right now.";
+    try {
+      detail = (await res.json()).detail ?? detail;
+    } catch {
+      /* non-JSON body */
+    }
+    throw new ApiError(res.status, detail);
+  }
+  const body = (await res.json()) as { token: string };
+  return { apiUrl: base, token: body.token, demo: true };
 }
 
 export class ApiError extends Error {

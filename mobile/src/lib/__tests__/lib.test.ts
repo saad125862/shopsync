@@ -1,4 +1,4 @@
-import { api, ApiError, normalizeUrl } from "../api";
+import { api, ApiError, demoLogin, normalizeUrl } from "../api";
 import { greeting, money, STATUS_LABEL, stockText, timeAgo } from "../format";
 
 describe("format", () => {
@@ -56,5 +56,34 @@ describe("api", () => {
 
   it("fails fast when not connected", async () => {
     await expect(api("/x", {}, null)).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe("demoLogin", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("returns a read-only demo session for the given API", async () => {
+    const f = jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(JSON.stringify({ token: "demo-token" })));
+    const s = await demoLogin(" https://api.example.com/ ");
+    expect(f.mock.calls[0][0]).toBe("https://api.example.com/api/demo-login");
+    expect((f.mock.calls[0][1] as RequestInit).method).toBe("POST");
+    expect(s).toEqual({ apiUrl: "https://api.example.com", token: "demo-token", demo: true });
+  });
+
+  it("explains when the demo is unavailable", async () => {
+    jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(JSON.stringify({ detail: "Demo is not available." }), { status: 404 }));
+    await expect(demoLogin("https://x.com")).rejects.toMatchObject({
+      status: 404,
+      message: "Demo is not available.",
+    });
+  });
+
+  it("gives a friendly message when the network is down", async () => {
+    jest.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("Network request failed"));
+    await expect(demoLogin("https://x.com")).rejects.toMatchObject({ status: 0 });
   });
 });

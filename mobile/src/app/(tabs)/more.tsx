@@ -50,6 +50,15 @@ export default function More() {
   };
   return (
     <ScrollView style={{ backgroundColor: theme.bg }} contentContainerStyle={{ paddingBottom: 60 }}>
+      {session?.demo && (
+        <Card>
+          <Text style={{ color: theme.text, fontWeight: "800" }}>Read-only demo</Text>
+          <Text style={{ color: theme.sub, marginTop: 4 }}>
+            You're exploring a live Shopify development store. Changes are disabled, and the order
+            history is sample data.
+          </Text>
+        </Card>
+      )}
       <SectionTitle>Alerts</SectionTitle>
       <FadeIn index={0}>
         <Card>
@@ -83,7 +92,7 @@ export default function More() {
         <Card>
           <Text style={{ color: theme.sub, marginBottom: 10 }}>Connected to {session?.apiUrl}</Text>
           <View>
-            <Btn label="Disconnect" kind="ghost" onPress={disconnect} />
+            <Btn label={session?.demo ? "Exit demo" : "Disconnect"} kind="ghost" onPress={disconnect} />
           </View>
         </Card>
       </FadeIn>
