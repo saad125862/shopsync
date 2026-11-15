@@ -1,6 +1,8 @@
 """Shopify-admin style read APIs: home overview, products, orders, global search."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from datetime import time as dt_time
+from datetime import timezone as dt_timezone
 from decimal import Decimal
 
 from django.db.models import Count, DecimalField, ExpressionWrapper, F, IntegerField, Q, Sum, Value
@@ -41,8 +43,9 @@ class OverviewView(ShopView):
             days = min(max(int(request.query_params.get("days", 30)), 1), 365)
         except ValueError:
             days = 30
-        now = timezone.now()
-        since = now - timedelta(days=days)
+        # Whole calendar days (UTC), ending today, like Shopify's own reports.
+        start_date = timezone.now().date() - timedelta(days=days - 1)
+        since = datetime.combine(start_date, dt_time.min, tzinfo=dt_timezone.utc)
         prev_since = since - timedelta(days=days)
         cur = Order.objects.filter(shop=shop, created_at_shopify__gte=since)
         prev = Order.objects.filter(
@@ -71,7 +74,7 @@ class OverviewView(ShopView):
         }
         daily = []
         for i in range(days):
-            day = (since + timedelta(days=i + 1)).date()
+            day = start_date + timedelta(days=i)
             row = by_day.get(day)
             daily.append(
                 {

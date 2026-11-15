@@ -69,7 +69,7 @@ class Command(BaseCommand):
                         "price": v["price"],
                     }
                 )
-            created = now - timedelta(days=rng.randint(0, 29), hours=rng.randint(0, 23))
+            created = now - timedelta(days=rng.randint(0, 28), hours=rng.randint(0, 23))
             services.upsert_order(
                 shop,
                 {

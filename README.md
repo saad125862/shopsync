@@ -62,7 +62,7 @@ cd frontend && npm test                   # 20 tests
 cd mobile && npm test                     # 9 tests
 ```
 
-CI (GitHub Actions) runs lint, type checks, tests and builds for all three parts on every push.
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint, type checks, tests and builds for all three parts. It is currently disabled; re-enable it with `gh workflow enable CI`.
 
 ## Deploy
 

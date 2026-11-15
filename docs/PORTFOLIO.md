@@ -13,7 +13,7 @@ Highlights
 - GraphQL sync and nightly reconcile that repairs inventory drift
 - Low-stock alerts by email and push; two-way stock changes with one-tap undo
 - Shopify-admin-style React dashboard and a React Native companion app
-- 76 automated tests across backend, web and mobile; CI on every push
+- 80+ automated tests across backend, web and mobile, with a ready-made GitHub Actions workflow
 
 Links: GitHub https://github.com/saad125862/shopsync · Live demo (after deploy) · Demo video (after recording)
 
