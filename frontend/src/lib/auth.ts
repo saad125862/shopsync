@@ -1,5 +1,6 @@
 const KEY = "shopsync.token";
 const OUT = "shopsync.loggedOut";
+const DEMO = "shopsync.demo";
 
 const read = (store: Storage | undefined, key: string): string | null => {
   try {
@@ -29,14 +30,21 @@ export function getDevToken(): string {
   return import.meta.env.VITE_DEV_TOKEN ?? "";
 }
 
-export function login(token: string) {
+export function login(token: string, demo = false) {
   write(globalThis.localStorage, KEY, token.trim());
+  write(globalThis.localStorage, DEMO, demo ? "1" : null);
   write(globalThis.sessionStorage, OUT, null);
 }
 
 export function logout() {
   write(globalThis.localStorage, KEY, null);
+  write(globalThis.localStorage, DEMO, null);
   write(globalThis.sessionStorage, OUT, "1");
+}
+
+/** True when signed in through the public "Try the live demo" button (read-only). */
+export function isDemo(): boolean {
+  return read(globalThis.localStorage, DEMO) === "1";
 }
 
 /** True when a standalone (non-embedded) visitor has some credential to try. */

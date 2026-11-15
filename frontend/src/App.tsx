@@ -1,4 +1,5 @@
 import {
+  Banner,
   BlockStack,
   Frame,
   Icon,
@@ -22,7 +23,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 import { api, installRedirectUrl, type Overview, type SearchResults } from "./api";
 import { ProductThumb } from "./components/ProductThumb";
 import { ToastProvider } from "./hooks/useToast";
-import { hasCredentials, isEmbedded, logout } from "./lib/auth";
+import { hasCredentials, isDemo, isEmbedded, logout } from "./lib/auth";
 import Alerts from "./pages/Alerts";
 import Analytics from "./pages/Analytics";
 import Connect from "./pages/Connect";
@@ -295,6 +296,24 @@ function Shell({ onLogout }: { onLogout: () => void }) {
       skipToContentTarget={undefined}
     >
       <ToastProvider>
+        {isDemo() && (
+          <div style={{ padding: "12px 16px 0" }}>
+            <Banner
+              tone="info"
+              title="You're viewing a read-only demo"
+              action={{
+                content: "Exit demo",
+                onAction: () => {
+                  logout();
+                  qc.clear();
+                  onLogout();
+                },
+              }}
+            >
+              This is a live Shopify development store connected to ShopSync. Changes are disabled.
+            </Banner>
+          </div>
+        )}
         <div key={pathname.split("/")[1] || "home"} className="page-enter">
           <Routes>
             <Route path="/" element={<Home />} />

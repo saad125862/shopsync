@@ -39,7 +39,8 @@ class SessionTokenAuthentication(authentication.BaseAuthentication):
             return None
         claims = decode_session_token(header[len(self.keyword) + 1 :])
         dest = claims.get("dest", "").removeprefix("https://")
-        if not valid_shop(dest):
+        is_demo = claims.get("typ") == "demo" and dest == settings.DEMO_SHOP_DOMAIN
+        if not (valid_shop(dest) or is_demo):
             raise exceptions.AuthenticationFailed("Bad shop in token")
         try:
             shop = Shop.objects.get(domain=dest, is_active=True)

@@ -1,4 +1,14 @@
-import { Banner, BlockStack, Button, Card, FormLayout, Page, Text, TextField } from "@shopify/polaris";
+import {
+  Banner,
+  BlockStack,
+  Button,
+  Card,
+  Divider,
+  FormLayout,
+  Page,
+  Text,
+  TextField,
+} from "@shopify/polaris";
 import { useState } from "react";
 
 import { api } from "../api";
@@ -9,6 +19,20 @@ export default function Connect({ onDone }: { onDone: () => void }) {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  async function tryDemo() {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await api<{ token: string }>("/api/demo-login", { method: "POST" });
+      login(res.token, true);
+      onDone();
+    } catch (e) {
+      setError((e as Error).message || "The demo isn't available right now");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function submit() {
     setBusy(true);
@@ -30,6 +54,19 @@ export default function Connect({ onDone }: { onDone: () => void }) {
       <Page narrowWidth title="Sign in to ShopSync">
         <Card>
           <BlockStack gap="400">
+            <BlockStack gap="200">
+              <Text as="h2" variant="headingMd">
+                Just looking?
+              </Text>
+              <Text as="p" tone="subdued">
+                Explore a live Shopify store connected to ShopSync. It's read-only: you can browse
+                products, orders, analytics and alerts, but nothing can be changed.
+              </Text>
+              <Button variant="primary" loading={busy} onClick={tryDemo}>
+                Try the live demo
+              </Button>
+            </BlockStack>
+            <Divider />
             <Text as="p" tone="subdued">
               Open ShopSync from your Shopify admin, go to Settings, choose "Connect mobile app", and
               paste the link code here. Inside Shopify admin you're signed in automatically.

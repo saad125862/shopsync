@@ -93,7 +93,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_RATES": {"demo": "60/hour"},
 }
+
+# Public read-only demo. Defaults to a fake store that can never be installed; on production set
+# DEMO_SHOP_DOMAIN to a real development store to showcase it (visitors get read-only access).
+DEMO_ENABLED = env.bool("DEMO_ENABLED", default=True)
+DEMO_SHOP_DOMAIN = env("DEMO_SHOP_DOMAIN", default="demo.shopsync.local")
+DEMO_TOKEN_HOURS = 6
 SPECTACULAR_SETTINGS = {"TITLE": "ShopSync API", "VERSION": "0.1.0"}
 
 # Celery

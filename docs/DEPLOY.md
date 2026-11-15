@@ -79,6 +79,16 @@ Open the dashboard, go to **Settings > Connect mobile app**, generate a link cod
 the app with your API URL. Push notifications need a physical device and an EAS project id
 (`eas init` adds it).
 
+## Public demo for recruiters
+
+The sign-in page has a **Try the live demo** button. It calls `POST /api/demo-login`, which returns a
+6-hour, **read-only** token (writes return 403: no stock changes, settings, syncs or link codes).
+
+- By default it targets a seeded fake store (`demo.shopsync.local`), which can never be installed.
+- To showcase your real development store instead, set this variable on the Render service and redeploy:
+  `DEMO_SHOP_DOMAIN=<your-store>.myshopify.com`
+- The endpoint is rate limited (60 requests per hour per visitor) and can be switched off with `DEMO_ENABLED=False`.
+
 ## 6. Verify end to end
 
 - [ ] `/health` is ok and `/api/docs/` loads

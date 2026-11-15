@@ -28,7 +28,8 @@ what the store owner uses: it runs inside Shopify admin as an embedded app and a
   sync log, global search, notifications, keyboard shortcuts (`/`, `Ctrl+K`, `g` then a letter)
 - **Mobile app** (React Native, Expo, "Sunset commerce" theme): Home, Orders, Products, Alerts, More,
   haptics and animation, push notifications, link-code sign-in
-- **Sign-in and logout**: automatic inside Shopify admin; link code for standalone web and mobile
+- **Sign-in and logout**: automatic inside Shopify admin; link code for standalone web and mobile;
+  a one-click read-only **live demo** for visitors
 
 ## Stack
 

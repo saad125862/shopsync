@@ -7,6 +7,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from . import services
@@ -17,14 +18,22 @@ from .models import (
     DeviceToken,
     InventoryLevel,
     Location,
+    Shop,
     SyncLog,
 )
 from .shopify import GraphQLClient, ShopifyError
 
 
 class IsShop(permissions.BasePermission):
+    message = "Demo mode is read-only."
+
     def has_permission(self, request, view):
-        return bool(request.user and getattr(request.user, "shop", None))
+        if not (request.user and getattr(request.user, "shop", None)):
+            return False
+        claims = request.auth if isinstance(request.auth, dict) else {}
+        if claims.get("typ") == "demo" and request.method not in permissions.SAFE_METHODS:
+            return False  # demo sessions can look but never change anything
+        return True
 
 
 class Page(PageNumberPagination):
@@ -314,6 +323,46 @@ class MobileTokenView(ShopView):
             algorithm="HS256",
         )
         return Response({"token": token, "expires_in_days": days}, status=status.HTTP_201_CREATED)
+
+
+class DemoLoginThrottle(AnonRateThrottle):
+    scope = "demo"
+
+
+class DemoLoginView(APIView):
+    """Public: hand out a short-lived, read-only token for the seeded demo store."""
+
+    authentication_classes: list = []
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [DemoLoginThrottle]
+
+    @extend_schema(request=None, responses={200: dict})
+    def post(self, request):
+        import time
+
+        import jwt
+        from django.conf import settings
+
+        domain = settings.DEMO_SHOP_DOMAIN
+        shop_exists = Shop.objects.filter(domain=domain, is_active=True).exists()
+        if not settings.DEMO_ENABLED or not shop_exists:
+            return Response({"detail": "Demo is not available."}, status=status.HTTP_404_NOT_FOUND)
+        now = int(time.time())
+        hours = settings.DEMO_TOKEN_HOURS
+        token = jwt.encode(
+            {
+                "iss": f"https://{domain}/admin",
+                "dest": f"https://{domain}",
+                "aud": settings.SHOPIFY_API_KEY,
+                "typ": "demo",
+                "iat": now,
+                "nbf": now - 5,
+                "exp": now + hours * 3600,
+            },
+            settings.SHOPIFY_API_SECRET,
+            algorithm="HS256",
+        )
+        return Response({"token": token, "expires_in_hours": hours, "shop": domain})
 
 
 class DeviceView(ShopView):

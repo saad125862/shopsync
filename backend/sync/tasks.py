@@ -53,7 +53,7 @@ def reconcile_all():
     from .reconcile import reconcile
 
     count = 0
-    for shop in Shop.objects.filter(is_active=True):
+    for shop in Shop.objects.filter(is_active=True).exclude(access_token_enc=""):
         try:
             reconcile(shop)
             count += 1

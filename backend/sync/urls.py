@@ -23,4 +23,5 @@ urlpatterns = [
     path("api/settings", api.SettingsView.as_view()),
     path("api/devices", api.DeviceView.as_view()),
     path("api/mobile-token", api.MobileTokenView.as_view()),
+    path("api/demo-login", api.DemoLoginView.as_view()),
 ]
