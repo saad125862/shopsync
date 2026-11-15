@@ -10,13 +10,6 @@ import { BrowserRouter, Link } from "react-router-dom";
 import App from "./App";
 import "./theme.css";
 
-// Load App Bridge only when embedded in the Shopify admin iframe.
-if (window.top !== window.self) {
-  const s = document.createElement("script");
-  s.src = "https://cdn.shopify.com/shopifycloud/app-bridge.js";
-  document.head.appendChild(s);
-}
-
 /** Lets Polaris navigation/links use client-side routing instead of full page loads. */
 function RouterLink({
   url,

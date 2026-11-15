@@ -30,9 +30,12 @@ describe("api()", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("uses the App Bridge session token when embedded", async () => {
+    const top = Object.getOwnPropertyDescriptor(window, "top");
+    Object.defineProperty(window, "top", { value: {}, configurable: true }); // inside an iframe
     window.shopify = { idToken: async () => "abc" };
     const f = vi.spyOn(globalThis, "fetch").mockImplementation(() => json({ ok: 1 }));
     await api("/api/x");
+    if (top) Object.defineProperty(window, "top", top);
     const headers = (f.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
     expect(headers.Authorization).toBe("Bearer abc");
   });

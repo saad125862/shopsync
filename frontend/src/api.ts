@@ -16,7 +16,8 @@ export async function getToken(): Promise<string> {
       await new Promise((r) => setTimeout(r, 100));
     }
   }
-  if (window.shopify?.idToken) return window.shopify.idToken();
+  // Outside Shopify admin App Bridge cannot issue tokens, so only trust it when embedded.
+  if (isEmbedded() && window.shopify?.idToken) return window.shopify.idToken();
   return getStoredToken() ?? getDevToken();
 }
 
