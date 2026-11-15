@@ -19,7 +19,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import { api, type Overview, type SearchResults } from "./api";
+import { api, installRedirectUrl, type Overview, type SearchResults } from "./api";
 import { ProductThumb } from "./components/ProductThumb";
 import { ToastProvider } from "./hooks/useToast";
 import { hasCredentials, isEmbedded, logout } from "./lib/auth";
@@ -52,8 +52,20 @@ function useDebounced<T>(value: T, ms = 250): T {
   return v;
 }
 
+/** Shopify opens the app URL with ?shop&hmac when installing: hand that to the API's OAuth step. */
+function shopifyLaunchUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("shop") || !params.get("hmac")) return null;
+  return installRedirectUrl(window.location.search);
+}
+
 export default function App() {
   const [authed, setAuthed] = useState(hasCredentials());
+  const launch = authed ? null : shopifyLaunchUrl();
+  useEffect(() => {
+    if (launch) window.location.replace(launch);
+  }, [launch]);
+  if (launch) return null;
   if (!authed) return <Connect onDone={() => setAuthed(true)} />;
   return <Shell onLogout={() => setAuthed(false)} />;
 }
