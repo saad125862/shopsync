@@ -1,0 +1,75 @@
+name: Build Android APK
+
+# Manual only: run it from the Actions tab (or `gh workflow run android-apk.yml`).
+# Builds an installable release APK on Linux (the Windows 260-character path limit breaks the
+# React Native C++ build locally) and attaches it to the chosen GitHub release.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to attach the APK to
+        default: v1.0.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_API_URL: https://shopsync-api-oe79.onrender.com
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('mobile/package-lock.json') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Generate the native Android project
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build the release APK (64-bit ARM phones)
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon --console=plain
+
+      - name: Name the APK
+        run: |
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          test -n "$APK"
+          cp "$APK" ShopSync.apk
+          ls -lh ShopSync.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ShopSync-apk
+          path: mobile/ShopSync.apk
+
+      - name: Attach to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ inputs.tag }}" ShopSync.apk --clobber --repo "${{ github.repository }}"
