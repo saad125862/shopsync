@@ -33,7 +33,7 @@ import {
 import { ProductThumb } from "../components/ProductThumb";
 import { QueryState } from "../components/QueryState";
 import { useCountUp } from "../hooks/useCountUp";
-import { money, shortDate, timeAgo } from "../lib/format";
+import { compact, money, shortDate, timeAgo } from "../lib/format";
 
 function Delta({ pct }: { pct: number | null }) {
   if (pct === null) return <span className="delta flat">new</span>;
@@ -158,10 +158,10 @@ export default function Home() {
           {d && (
             <BlockStack gap="400">
               <div className="kpi-grid">
-                <Kpi label="Total sales" value={Number(d.revenue)} fmt={(n) => money(n, "USD", 0)} pct={d.change.revenue} i={0} />
+                <Kpi label="Total sales" value={Number(d.revenue)} fmt={(n) => money(n, d.currency, 0)} pct={d.change.revenue} i={0} />
                 <Kpi label="Orders" value={d.orders} fmt={(n) => String(Math.round(n))} pct={d.change.orders} i={1} />
                 <Kpi label="Units sold" value={d.units} fmt={(n) => String(Math.round(n))} pct={d.change.units} i={2} />
-                <Kpi label="Avg order value" value={Number(d.aov)} fmt={(n) => money(n, "USD", 2)} pct={d.change.aov} i={3} />
+                <Kpi label="Avg order value" value={Number(d.aov)} fmt={(n) => money(n, d.currency, 2)} pct={d.change.aov} i={3} />
               </div>
 
               <Card>
@@ -180,11 +180,11 @@ export default function Home() {
                         </defs>
                         <CartesianGrid stroke="#262d36" vertical={false} />
                         <XAxis dataKey="date" tickFormatter={shortDate} stroke="#8b949e" fontSize={12} minTickGap={32} />
-                        <YAxis stroke="#8b949e" fontSize={12} width={48} tickFormatter={(v) => `$${v}`} />
+                        <YAxis stroke="#8b949e" fontSize={12} width={48} tickFormatter={(v) => compact(Number(v), d.currency)} />
                         <Tooltip
                           contentStyle={{ background: "#161b22", border: "1px solid #262d36", borderRadius: 8 }}
                           labelFormatter={(l) => shortDate(String(l))}
-                          formatter={(v) => [money(Number(v)), "Sales"]}
+                          formatter={(v) => [money(Number(v), d.currency), "Sales"]}
                         />
                         <Area
                           type="monotone"
@@ -215,7 +215,7 @@ export default function Home() {
                           {p.id ? <Link to={`/products/${p.id}`}>{p.title}</Link> : p.title}
                           <div><Text as="span" tone="subdued" variant="bodySm">{p.units} sold</Text></div>
                         </div>
-                        <span className="mono">{money(p.revenue, "USD", 0)}</span>
+                        <span className="mono">{money(p.revenue, d.currency, 0)}</span>
                       </InlineStack>
                     ))}
                   </BlockStack>

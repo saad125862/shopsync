@@ -90,6 +90,7 @@ export interface ProductRow {
 
 export interface ProductDetail {
   id: number;
+  currency: string;
   title: string;
   vendor: string;
   status: string;
@@ -119,6 +120,7 @@ export interface Settings {
 export interface Overview {
   days: number;
   shop: string;
+  currency: string;
   products: number;
   low_stock: number;
   out_of_stock: number;

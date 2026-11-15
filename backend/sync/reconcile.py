@@ -12,6 +12,7 @@ def reconcile(shop: Shop, client: GraphQLClient | None = None) -> SyncLog:
     client = client or GraphQLClient(shop.domain, shop.access_token)
     drift = checked = 0
     try:
+        services.refresh_shop_currency(shop, client)
         for node in client.paginate(services.LOCATIONS_Q, ["locations"]):
             services.upsert_location(shop, gid_to_int(node["id"]), node["name"], node["isActive"])
         for node in client.paginate(services.PRODUCTS_Q, ["products"]):

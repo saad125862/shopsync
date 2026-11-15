@@ -117,6 +117,7 @@ class OverviewView(ShopView):
             {
                 "days": days,
                 "shop": shop.domain,
+                "currency": shop.currency,
                 "products": shop.products.count(),
                 "variants": InventoryLevel.objects.filter(location__shop=shop).count(),
                 "low_stock": open_alerts.filter(level="low").count(),
@@ -309,6 +310,7 @@ class ProductDetailView(ShopView):
                 "title": product.title,
                 "vendor": product.vendor,
                 "status": product.status,
+                "currency": self.shop.currency,
                 "image_url": product.image_url,
                 "total_available": total,
                 "units_sold": sold,

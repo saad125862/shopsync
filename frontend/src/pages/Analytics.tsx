@@ -16,7 +16,7 @@ import {
 import { api, type Overview } from "../api";
 import { ProductThumb } from "../components/ProductThumb";
 import { QueryState } from "../components/QueryState";
-import { money, shortDate } from "../lib/format";
+import { compact, money, shortDate } from "../lib/format";
 
 const tip = { background: "#161b22", border: "1px solid #262d36", borderRadius: 8 };
 
@@ -62,11 +62,11 @@ export default function Analytics() {
                       <LineChart data={data}>
                         <CartesianGrid stroke="#262d36" vertical={false} />
                         <XAxis dataKey="date" tickFormatter={shortDate} stroke="#8b949e" fontSize={12} minTickGap={32} />
-                        <YAxis stroke="#8b949e" fontSize={12} width={48} tickFormatter={(v) => `$${v}`} />
+                        <YAxis stroke="#8b949e" fontSize={12} width={48} tickFormatter={(v) => compact(Number(v), d.currency)} />
                         <Tooltip
                           contentStyle={tip}
                           labelFormatter={(l) => shortDate(String(l))}
-                          formatter={(v) => [money(Number(v)), "Sales"]}
+                          formatter={(v) => [money(Number(v), d.currency), "Sales"]}
                         />
                         <Line type="monotone" dataKey="revenue" stroke="#2dd4bf" strokeWidth={2} dot={false} animationDuration={1200} />
                       </LineChart>
@@ -104,7 +104,7 @@ export default function Analytics() {
                     <ProductThumb title={p.title} url={p.image_url} size={32} />
                     <span style={{ flex: 1 }}>{p.title}</span>
                     <span className="mono sub">{p.units} units</span>
-                    <span className="mono">{money(p.revenue, "USD", 0)}</span>
+                    <span className="mono">{money(p.revenue, d.currency, 0)}</span>
                   </InlineStack>
                 ))}
                 {d.top_products.length === 0 && <Text as="p" tone="subdued">No sales in this period.</Text>}

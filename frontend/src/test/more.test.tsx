@@ -28,6 +28,7 @@ describe("format helpers", () => {
   it("formats money and stock text", () => {
     expect(money(1234.5)).toBe("$1,234.50");
     expect(money("49", "USD", 0)).toBe("$49");
+    expect(money(2150, "BDT", 0)).toBe("৳2,150");
     expect(stockText(87, 3)).toBe("87 in stock for 3 variants");
     expect(stockText(5, 1)).toBe("5 in stock");
   });

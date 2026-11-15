@@ -19,6 +19,8 @@ from .models import (
 )
 from .shopify import GraphQLClient, gid_to_int
 
+SHOP_Q = "{ shop { currencyCode } }"
+
 LOCATIONS_Q = """
 query($cursor: String) {
   locations(first: 50, after: $cursor) {
@@ -224,6 +226,16 @@ def norm_order_graphql(node: dict) -> dict:
     }
 
 
+def refresh_shop_currency(shop: Shop, client: GraphQLClient) -> str:
+    """Store the shop's currency (e.g. BDT) so the dashboard shows prices in the right currency."""
+    data = client.execute(SHOP_Q)
+    code = ((data or {}).get("shop") or {}).get("currencyCode")
+    if code and code != shop.currency:
+        shop.currency = code
+        shop.save(update_fields=["currency"])
+    return shop.currency
+
+
 # ---- full sync -------------------------------------------------------------------------------
 
 
@@ -231,6 +243,7 @@ def full_sync(shop: Shop, client: GraphQLClient | None = None) -> SyncLog:
     log = SyncLog.objects.create(shop=shop, kind="full_sync")
     client = client or GraphQLClient(shop.domain, shop.access_token)
     try:
+        refresh_shop_currency(shop, client)
         n_loc = n_prod = n_ord = 0
         for node in client.paginate(LOCATIONS_Q, ["locations"]):
             upsert_location(shop, gid_to_int(node["id"]), node["name"], node["isActive"])

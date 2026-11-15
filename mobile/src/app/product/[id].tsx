@@ -53,7 +53,7 @@ export default function ProductScreen() {
           <Card>
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <Text style={{ color: theme.text, fontWeight: "800" }}>{v.title}</Text>
-              <Text style={{ color: theme.text }}>{money(v.price)}</Text>
+              <Text style={{ color: theme.text }}>{money(v.price, p.currency, 0)}</Text>
             </View>
             <Text style={{ color: theme.sub, marginBottom: 6 }}>{v.sku}</Text>
             {v.levels.map((lv) => (

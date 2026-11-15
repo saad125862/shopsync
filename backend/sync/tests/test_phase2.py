@@ -234,3 +234,17 @@ def test_gdpr_shop_redact(client, shop):
     assert resp.status_code == 200
     assert not Shop.objects.filter(domain=SHOP).exists()
 
+
+
+def test_sync_stores_the_shop_currency(shop):
+    class C(FakeClient):
+        def execute(self, q, v=None):
+            return {"shop": {"currencyCode": "BDT"}}
+
+    services.refresh_shop_currency(shop, C({}))
+    shop.refresh_from_db()
+    assert shop.currency == "BDT"
+    # a client without shop data (older fakes) leaves it unchanged
+    services.refresh_shop_currency(shop, FakeClient({}))
+    shop.refresh_from_db()
+    assert shop.currency == "BDT"

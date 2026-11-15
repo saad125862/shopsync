@@ -41,7 +41,7 @@ export default function ProductDetailPage() {
                     </Text>
                     <Text as="p" tone="subdued">
                       {p.variants.length} variants
-                      {p.variants[0] ? ` · from ${money(Math.min(...p.variants.map((v) => Number(v.price))))}` : ""}
+                      {p.variants[0] ? ` · from ${money(Math.min(...p.variants.map((v) => Number(v.price))), p.currency, 0)}` : ""}
                     </Text>
                   </BlockStack>
                 </InlineStack>
@@ -73,7 +73,7 @@ export default function ProductDetailPage() {
                       <span style={{ flex: 1 }}>
                         <strong>{v.title}</strong> <span className="mono sub">{v.sku}</span>
                       </span>
-                      <span className="mono">{money(v.price)}</span>
+                      <span className="mono">{money(v.price, p.currency, 0)}</span>
                       <span className="mono sub">{v.available} total</span>
                     </div>
                     {v.levels.map((lv) => (

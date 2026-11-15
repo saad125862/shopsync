@@ -310,7 +310,7 @@ function Shell({ onLogout }: { onLogout: () => void }) {
                 },
               }}
             >
-              This is a live Shopify development store connected to ShopSync. Changes are disabled.
+              This is a live Shopify development store connected to ShopSync. Products and stock are live; the order history is sample data. Changes are disabled.
             </Banner>
           </div>
         )}

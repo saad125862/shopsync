@@ -75,7 +75,7 @@ export default function Home() {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 2 }}>
                 <CountUp
                   value={Number(d.revenue)}
-                  format={(n) => money(n, "USD", 0)}
+                  format={(n) => money(n, d.currency, 0)}
                   style={{ color: theme.text, fontSize: 34, fontWeight: "800" }}
                 />
                 <Delta pct={d.change.revenue} />
@@ -91,7 +91,7 @@ export default function Home() {
               {[
                 ["Orders", d.orders, (n: number) => String(Math.round(n))],
                 ["Units", d.units, (n: number) => String(Math.round(n))],
-                ["AOV", Number(d.aov), (n: number) => money(n, "USD", 0)],
+                ["AOV", Number(d.aov), (n: number) => money(n, d.currency, 0)],
               ].map(([label, value, fmt]) => (
                 <View
                   key={label as string}
@@ -161,7 +161,7 @@ export default function Home() {
                     <Text style={{ color: theme.text, fontWeight: "700" }}>{p.title}</Text>
                     <Text style={{ color: theme.sub }}>{p.units} sold</Text>
                   </View>
-                  <Text style={{ color: theme.text, fontWeight: "700" }}>{money(p.revenue, "USD", 0)}</Text>
+                  <Text style={{ color: theme.text, fontWeight: "700" }}>{money(p.revenue, d.currency, 0)}</Text>
                 </View>
               </Card>
             </FadeIn>

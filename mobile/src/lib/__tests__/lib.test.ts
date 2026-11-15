@@ -5,7 +5,8 @@ describe("format", () => {
   it("formats money", () => {
     expect(money("12.5", "USD")).toBe("$12.50");
     expect(money(1234, "USD", 0)).toBe("$1,234");
-    expect(money(5, "BDT")).toBe("5.00 BDT");
+    expect(money(2150, "BDT", 0)).toBe("\u09F32,150");
+    expect(money(5, "XYZ")).toBe("5.00 XYZ");
   });
   it("describes stock like Shopify", () => {
     expect(stockText(87, 3)).toBe("87 in stock for 3 variants");

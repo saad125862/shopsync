@@ -13,13 +13,16 @@ export const STATUS_COLOR: Record<StockStatus, string> = {
   out: theme.danger,
 };
 
+const SYMBOLS: Record<string, string> = { USD: "$", BDT: "\u09F3", EUR: "\u20AC", GBP: "\u00A3" };
+
 export function money(amount: string | number, currency = "USD", digits = 2): string {
   const n = Number(amount) || 0;
   const body = n.toLocaleString("en-US", {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
-  return currency === "USD" ? `$${body}` : `${body} ${currency}`;
+  const symbol = SYMBOLS[currency];
+  return symbol ? `${symbol}${body}` : `${body} ${currency}`;
 }
 
 export function timeAgo(iso: string, now = Date.now()): string {

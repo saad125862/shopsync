@@ -155,6 +155,7 @@ export interface Change {
 export interface Overview {
   days: number;
   shop: string;
+  currency: string;
   products: number;
   variants: number;
   low_stock: number;
@@ -197,6 +198,7 @@ export interface ProductLevel {
 
 export interface ProductDetail {
   id: number;
+  currency: string;
   title: string;
   vendor: string;
   status: string;

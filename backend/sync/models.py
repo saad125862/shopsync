@@ -12,6 +12,7 @@ class Shop(models.Model):
     uninstalled_at = models.DateTimeField(null=True, blank=True)
     low_stock_threshold = models.PositiveIntegerField(default=5)
     alert_email = models.EmailField(blank=True, default="")
+    currency = models.CharField(max_length=8, default="USD")
 
     def __str__(self):
         return self.domain

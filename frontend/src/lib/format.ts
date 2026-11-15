@@ -4,6 +4,7 @@ export function money(amount: string | number, currency = "USD", digits = 2): st
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency || "USD",
+      currencyDisplay: "narrowSymbol",
       minimumFractionDigits: digits,
       maximumFractionDigits: digits,
     }).format(n);
@@ -34,4 +35,19 @@ export function hueFor(text: string): number {
 
 export function stockText(total: number, variants: number): string {
   return `${total} in stock${variants > 1 ? ` for ${variants} variants` : ""}`;
+}
+
+/** Short axis label like 12k with the currency symbol. */
+export function compact(n: number, currency = "USD"): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency || "USD",
+      currencyDisplay: "narrowSymbol",
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(n);
+  } catch {
+    return String(n);
+  }
 }
