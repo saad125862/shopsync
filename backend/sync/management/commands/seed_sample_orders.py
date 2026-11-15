@@ -7,12 +7,14 @@ not in Shopify. Re-running replaces the previous sample orders.
 
 import random
 from datetime import timedelta
+from decimal import Decimal
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
-from sync import services
-from sync.models import Order, Shop, Variant
+from sync.models import Order, OrderLine, Shop, Variant
 
 SAMPLE_ID_BASE = 9_000_000_000_000_000
 
@@ -85,9 +87,37 @@ class Command(BaseCommand):
         variants = list(Variant.objects.filter(product__shop=shop).select_related("product"))
         if not variants:
             raise CommandError("The shop has no synced products yet.")
-        removed, _ = Order.objects.filter(shop=shop, shopify_id__gte=SAMPLE_ID_BASE).delete()
         orders = build_orders(variants, days=opts["days"], currency=shop.currency)
-        for data in orders:
-            services.upsert_order(shop, data)
+        with transaction.atomic():
+            removed, _ = Order.objects.filter(shop=shop, shopify_id__gte=SAMPLE_ID_BASE).delete()
+            created = Order.objects.bulk_create(
+                [
+                    Order(
+                        shop=shop,
+                        shopify_id=o["id"],
+                        name=o["name"],
+                        total_price=Decimal(str(o["total_price"])),
+                        currency=o["currency"],
+                        financial_status=o["financial_status"],
+                        fulfillment_status=o["fulfillment_status"],
+                        created_at_shopify=parse_datetime(o["created_at"]),
+                    )
+                    for o in orders
+                ]
+            )
+            by_id = {o.shopify_id: o for o in created}
+            lines = [
+                OrderLine(
+                    order=by_id[o["id"]],
+                    shopify_variant_id=li["variant_id"],
+                    sku=li["sku"],
+                    title=li["title"],
+                    quantity=li["quantity"],
+                    price=Decimal(str(li["price"])),
+                )
+                for o in orders
+                for li in o["line_items"]
+            ]
+            OrderLine.objects.bulk_create(lines, batch_size=500)
         msg = f"Replaced {removed} old rows with {len(orders)} sample orders for {shop.domain}"
         self.stdout.write(self.style.SUCCESS(msg))
