@@ -63,7 +63,9 @@ current prices and limits on each host; they change.
    returns to `/auth/callback`, which registers webhooks and queues the first sync.
 4. Optional: `docker compose exec backend python manage.py seed_shopify --shop <store>.myshopify.com`
    against the live API (run as a Render shell command) to fill the store with the demo catalog,
-   then `... seed_shopify --shop <store> --orders 5` to create test orders.
+   then `... seed_shopify --shop <store> --orders 5` to create test orders. Test orders need the extra
+   scopes `write_draft_orders,write_orders` (add them in a new app version and re-approve the install);
+   otherwise create an order by hand in Shopify admin (Orders > Create order).
 
 ## 5. Mobile app (EAS)
 
