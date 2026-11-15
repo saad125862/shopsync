@@ -1,4 +1,4 @@
-import { getDevToken, getStoredToken } from "./lib/auth";
+import { getDevToken, getStoredToken, isEmbedded } from "./lib/auth";
 
 declare global {
   interface Window {
@@ -10,6 +10,12 @@ const BASE = import.meta.env.VITE_API_URL ?? "";
 
 /** Session token: App Bridge inside the Shopify admin, a dev token when running standalone. */
 export async function getToken(): Promise<string> {
+  // Embedded in Shopify admin: App Bridge loads asynchronously, so wait for it (up to ~5s).
+  if (isEmbedded()) {
+    for (let i = 0; i < 50 && !window.shopify?.idToken; i++) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
   if (window.shopify?.idToken) return window.shopify.idToken();
   return getStoredToken() ?? getDevToken();
 }

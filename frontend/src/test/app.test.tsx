@@ -44,6 +44,24 @@ describe("api()", () => {
   });
 });
 
+describe("embedded App Bridge loading", () => {
+  it("waits for App Bridge before reading the session token", async () => {
+    const top = Object.getOwnPropertyDescriptor(window, "top");
+    Object.defineProperty(window, "top", { value: {}, configurable: true }); // pretend we're in an iframe
+    delete (window as Window).shopify;
+    setTimeout(() => {
+      window.shopify = { idToken: async () => "late-token" };
+    }, 250);
+    const f = vi.spyOn(globalThis, "fetch").mockImplementation(() => json({}));
+    await api("/api/x");
+    const headers = (f.mock.calls[0][1] as RequestInit).headers as Record<string, string>;
+    expect(headers.Authorization).toBe("Bearer late-token");
+    if (top) Object.defineProperty(window, "top", top);
+    delete (window as Window).shopify;
+    vi.restoreAllMocks();
+  });
+});
+
 describe("install redirect", () => {
   it("builds the OAuth entry url from Shopify's query string", () => {
     expect(installRedirectUrl("?shop=a.myshopify.com&hmac=x", "https://api.example.com")).toBe(
