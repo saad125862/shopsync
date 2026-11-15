@@ -125,3 +125,14 @@ EMAIL_BACKEND = env(
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="ShopSync <noreply@localhost>")
 # Optional Fernet key for encrypting Shopify tokens; derived from SECRET_KEY when empty.
 FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY", default="")
+
+
+# Send application and request errors (with tracebacks) to stdout so Render's log viewer shows them.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"plain": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {"django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False}},
+}

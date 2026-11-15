@@ -115,3 +115,16 @@ def test_session_token_auth():
         SessionTokenAuthentication().authenticate(bad)
 
     assert APIClient() is not None
+
+
+@pytest.mark.django_db
+def test_callback_reports_shopify_rejection_as_502(client):
+    import requests
+
+    client.get("/auth/install", sign({"shop": SHOP}))
+    state = client.session["shopify_oauth_state"]
+    params = sign({"shop": SHOP, "code": "abc", "state": state})
+    with mock.patch("sync.shopify.exchange_code", side_effect=requests.HTTPError("400")):
+        resp = client.get("/auth/callback", params)
+    assert resp.status_code == 502
+    assert not Shop.objects.filter(domain=SHOP).exists()

@@ -1,11 +1,15 @@
+import logging
 import secrets
 
+import requests
 from django.conf import settings
-from django.http import HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.views.decorators.http import require_GET
 
 from . import shopify
 from .models import Shop
+
+log = logging.getLogger(__name__)
 
 STATE_SESSION_KEY = "shopify_oauth_state"
 
@@ -35,7 +39,15 @@ def callback(request):
     if not expected or params.get("state") != expected:
         return HttpResponseBadRequest("Bad state")
 
-    token_data = shopify.exchange_code(shop_domain, params.get("code", ""))
+    try:
+        token_data = shopify.exchange_code(shop_domain, params.get("code", ""))
+    except requests.RequestException:
+        log.exception("Shopify rejected the OAuth code exchange for %s", shop_domain)
+        return HttpResponse(
+            "Shopify did not accept the install code. Reopen the app from your Shopify admin "
+            "and try again.",
+            status=502,
+        )
     shop, _ = Shop.objects.get_or_create(domain=shop_domain)
     shop.access_token = token_data["access_token"]
     shop.scope = token_data.get("scope", "")
